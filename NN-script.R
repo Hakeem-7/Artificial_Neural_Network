@@ -1,7 +1,20 @@
 library(dplyr)
+library(ggplot2)
+library(tidyverse)
+
 
 concrete <- read.csv("Concrete.csv")
 glimpse(concrete)
+
+
+ggplot(data = concrete, aes(x = concrete$Strength)) +
+  geom_histogram(aes(y =..density..), binwidth = 4, fill="#DD8888", color = "black")+
+  geom_density()+
+  labs(x = "Concrete Strength")+
+  ggtitle("Quick Overview of the Raw Output Data") +
+  theme(plot.title = element_text(hjust = 0.5))
+  
+# The ouput data (concrete strength) Looks fairly normal
 
 # Scaling
 # Create a normalization function.
