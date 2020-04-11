@@ -9,12 +9,12 @@ glimpse(concrete)
 
 ggplot(data = concrete, aes(x = concrete$Strength)) +
   geom_histogram(aes(y =..density..), binwidth = 4, fill="#DD8888", color = "black")+
-  geom_density()+
+  geom_density(alpha = .4, fill = "black")+
   labs(x = "Concrete Strength")+
   ggtitle("Quick Overview of the Raw Output Data") +
   theme(plot.title = element_text(hjust = 0.5))
   
-# The ouput data (concrete strength) Looks fairly normal
+# The ouput data (concrete strength) Looks fairly normal.
 
 # Scaling
 # Create a normalization function.
@@ -67,3 +67,53 @@ cor(pred_strength,concrete_test$Strength)
 ak <- if_else(pred_strength>0.5, "good", "bad") #creating a threshold for a continous dataset
 
 ?neuralnet
+
+
+
+
+#----------------------------------------------------#
+            #project time#
+#---------------------------------------------------#
+
+
+read.libsvm = function( filename, dimensionality ) {
+  
+  content = readLines(filename )
+  num_lines = length( content )
+  yx = matrix( 0, num_lines, dimensionality + 1 )
+  
+  # loop over lines
+  for ( i in 1:num_lines ) {
+    
+    # split by spaces
+    line = as.vector( strsplit( content[i], ' ' )[[1]])
+    
+    # save label
+    yx[i,1] = as.numeric( line[[1]] )
+    
+    # loop over values
+    for ( j in 2:length( line )) {
+      
+      # split by colon
+      index_value = strsplit( line[j], ':' )[[1]]
+      
+      index = as.numeric( index_value[1] ) + 1		# +1 because label goes first
+      value = as.numeric( index_value[2] )
+      
+      yx[i, index] = value
+    }
+  }
+  
+  return(yx)
+}
+
+raw_data <- read.libsvm("mnist.scale", 780)
+dim(raw_data)
+glimpse(raw_data)
+summary(raw_data)
+
+drop_na(raw_data)
+raw1 <- as.data.frame(raw_data)%>%
+  drop_na()
+
+glimpse(raw1)
