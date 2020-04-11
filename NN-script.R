@@ -117,3 +117,13 @@ raw1 <- as.data.frame(raw_data)%>%
   drop_na()
 
 glimpse(raw1)
+
+mnist_train <- raw1 %>% sample_frac(.7)
+mnist_test <- anti_join(raw1, mnist_train)
+glimpse(mnist_train)
+glimpse(mnist_test)
+
+
+
+
+
