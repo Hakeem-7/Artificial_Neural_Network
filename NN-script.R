@@ -107,21 +107,27 @@ read.libsvm = function( filename, dimensionality ) {
   return(yx)
 }
 
+
 raw_data <- read.libsvm("mnist.scale", 780)
 dim(raw_data)
 glimpse(raw_data)
 summary(raw_data)
 
-drop_na(raw_data)
+
 raw1 <- as.data.frame(raw_data)%>%
   drop_na()
 
 glimpse(raw1)
 
+raw1$V1 %>% head(20) # 10 classes: 0 - 9
+
+# Split the dataset by a ratio of 70:30
 mnist_train <- raw1 %>% sample_frac(.7)
 mnist_test <- anti_join(raw1, mnist_train)
 glimpse(mnist_train)
 glimpse(mnist_test)
+
+# Binary classification using neural network of 100 hidden layers
 
 
 
