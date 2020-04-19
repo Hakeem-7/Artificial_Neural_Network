@@ -52,9 +52,9 @@ concrete_test <- concrete_norm[-sampling,]
 #soft <- function(x) log(1 + exp(-x))
 
 set.seed(7)
-concrete_model <- neuralnet(Strength ~., data = concrete_train)
+concrete_model <- neuralnet(Strength ~., data = concrete_train, act.fct = "logistic")
 concrete_model1<- update(concrete_model, hidden = 5)
-plot(concrete_model)
+plot(concrete_model1)
 
 # model evaluation
 model_results <- compute(concrete_model1, concrete_test[-1])
@@ -118,16 +118,174 @@ raw1 <- as.data.frame(raw_data)%>%
   drop_na()
 
 glimpse(raw1)
+dim(raw1)
 
 raw1$V1 %>% head(20) # 10 classes: 0 - 9
 
+#write.csv(raw1, "C:\\Github\\mnist.csv", row.names = FALSE)
+
+mnist <- read.csv("mnist.csv", header = T)
+
+# convert the "label" column to a factor
+mnist$Label <- factor(mnist$Label)
+
 # Split the dataset by a ratio of 70:30
-mnist_train <- raw1 %>% sample_frac(.7)
-mnist_test <- anti_join(raw1, mnist_train)
-glimpse(mnist_train)
-glimpse(mnist_test)
+train <- mnist %>% sample_frac(.7)
+test <- anti_join(mnist, train)
+
+dim(train)
+
 
 # Binary classification using neural network of 100 hidden layers
+
+# custom activation function - Softplus function: approximation of the RELU, as shown below
+
+
+softplus <- function(x)log(1+exp(x))
+relu <- function(x) sapply(x, function(z) max(0,z))
+
+x <- seq(from=-10, to=10, by=0.2)
+library(ggplot2)
+library(reshape2)
+
+fits <- data.frame(x=x, softplus = softplus(x), relu = relu(x))
+#glimpse(fits)
+long <- melt(fits, id.vars="x") 
+#glimpse(long)
+ggplot(data=long, aes(x=x, y=value, group=variable, colour=variable))+
+  geom_line(size=1) +
+  ggtitle("ReLU & Softplus") +
+  theme(plot.title = element_text(size = 26, hjust = 0.5)) +
+  theme(legend.title = element_blank()) +
+  theme(legend.text = element_text(size = 18)) #Almost same as ReLU
+
+
+# The internals of the neuralnet package will try to differentiate any function provided to act.fct.
+# The source code block is shown below
+
+# if (is.function(act.fct)) {
+#act.deriv.fct <- differentiate(act.fct)
+#attr(act.fct, "type") <- "function" }
+
+# The differentiate function is a more complex use of the deriv function which you can also see in the source code above.
+# Therefore, it is currently not possible to provide max(0,x) to the act.fct.
+
+
+#----------------------------------------------------#
+            #binary classification#
+#---------------------------------------------------#
+
+#write.csv(raw_data, "C:\\Github\\Machine_Learning\\Mnist.csv", row.names = FALSE)
+
+
+
+
+#Class variables function
+Classes <- function(data){
+  Class_variables <- sapply(data, function(x) class(x)) 
+  return(Class_variables)
+}
+Classes(test)
+?neuralnet
+
+train_v <- sample(nrow(train), 1/3 * nrow(train))
+
+train_v1 <- train[train_v, ]
+
+set.seed(7)
+nn_mnist <- neuralnet(Label == "9" ~ ., train_v1, linear.output = FALSE, hidden = 100, act.fct = "logistic")
+
+plot(model_bin)
+
+
+# Binary classification model evaluation
+
+levels(test$Label)
+
+sum(test$Label == "9")
+
+pred_bin <- predict(nn_mnist, test)
+
+summary(pred_bin)
+
+table(test$Label == "9", pred_bin[, 1] > 0.000000000002)
+
+
+# Multi-class classification
+
+nn_mnist1 <- neuralnet((Label == "0") + (Label == "1") + (Label == "2") + (Label == "3")+(Label == "4") + 
+                         (Label == "4") + (Label == "5") + (Label == "6") + (Label == "7") + (Label == "8") +
+                         (Label == "9")~ ., train_v1, linear.output = FALSE, hidden = 100, act.fct = "logistic")
+
+pred_bin1 <- predict(nn_mnist1, test)
+
+table(test$Label, apply(pred_bin1, 1, which.max))
+
+
+# Decision Tree
+
+#Decision Tree Algo using the C5.0 algorithm by J. Ross Quinlanb (Industry Standard) - Divide and Conquer
+
+
+set.seed(7)
+
+library(C50)
+mnist_dt <- C5.0(train[-1], train$Label)
+mnist_dt 
+#summary(iris_model) #Training error is 2.5%
+
+#Evaluate Model Performance
+
+mnist_pred <- predict(mnist_dt, test
+library(gmodels)
+CrossTable(iris_test$Species, iris_pred, prop.r = FALSE,
+           prop.c = FALSE, prop.chisq = FALSE,
+           dnn = c("predicted", "actual"))
+
+(mean(iris_pred == iris_test$Species))*100 #Classification Accuracy is approx. 97%
+
+
+#Evaluate Model Performance - Using a subset of the training data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+train_idx <- sample(nrow(iris), 2/3 * nrow(iris))
+iris_train <- iris[train_idx, ]
+iris_test <- iris[-train_idx, ]
+
+# Binary classification
+nn <- neuralnet(Species == "setosa" ~ ., iris_train, linear.output = FALSE)
+pred <- predict(nn, iris_test)
+table(iris_test$Species == "setosa", pred[, 1] > 0.5)
+
+summary(pred)
+
+# Multiclass classification
+nn <- neuralnet((Species == "setosa") + (Species == "versicolor") + (Species == "virginica")~ Petal.Length + Petal.Width, iris_train, linear.output = FALSE)
+pred <- predict(nn, iris_test)
+table(iris_test$Species, apply(pred, 1, which.max))
+
+
+
+
 
 
 
