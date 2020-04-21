@@ -1,0 +1,2 @@
+# Neural-Network
+This analytical study was executed using the R programming language. The dataset used is the famous MNIST dataset [1]. The dataset is a multiclass data from which the training and testing data were sampled. Neural Network with backpropagation, which is an advanced Machine Learning algorithm was implemented as a binary and multiclass classifier. Then, a decision tree algorithm was executed. Last, the accuracy and confusion matrix of each model was reported.
